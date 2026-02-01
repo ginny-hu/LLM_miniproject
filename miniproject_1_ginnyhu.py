@@ -47,7 +47,7 @@ def get_model_id_gdrive(model_type):
     elif model_type == "100d":
         word_index_id = "1-oWV0LqG3fmrozRZ7WB1jzeTJHRUI3mq"
         embeddings_id = "1SRHfX130_6Znz7zbdfqboKosz-PfNvNp"
-        
+
     return word_index_id, embeddings_id
 
 
@@ -303,20 +303,23 @@ def cosine_similarity(x, y):
     ##################################
     ### TODO: Add code here (10 pts) ###
     ##################################
+    # Ensure the input is a numpy array
     x = np.array(x)
     y = np.array(y)
 
-    dot_product = np.dot(x, y)
+    dot_product = np.dot(x, y) # Compute the dot product
 
+    # Compute vector length (L2 Norm)
     norm_x = np.linalg.norm(x)
     norm_y = np.linalg.norm(y)
 
+    # Prevent division by zero
     if norm_x == 0 or norm_y == 0:
         cosine_sim = 0.0
-    else:
+    else: # Compute cosine similarity
         cosine_sim = dot_product / (norm_x * norm_y)
 
-    return np.exp(cosine_sim)
+    return np.exp(cosine_sim) # Get Exponentiate
 
     
 # Task II: Average Glove Embedding Calculation
@@ -330,27 +333,29 @@ def averaged_glove_embeddings_gdrive(sentence, word_index_dict, embeddings, mode
     5. Return averaged embeddings
     (30 pts)
     """
-    embedding_dim = int(model_type.split("d")[0])
-    embedding = np.zeros(embedding_dim)
+    embedding_dim = int(model_type.split("d")[0]) # Get vector dimensions
+    embedding_sum = np.zeros(embedding_dim) # Initialize a vector of all zeros to store the summation results.
     
     ##################################
     ##### TODO: Add code here (20 pts) #####
     ##################################
-    words = sentence.split()
+    words = sentence.split() # Break the sentence into individual words
 
-    valid_word_count = 0
+    valid_word_count = 0 # Used to record the number of valid words
 
     for word in words:
-        word_lower = word.lower()
+        word_lower = word.lower() # Convert to lowercase to match the format of the GloVe dictionary
 
+        # Check if the character is in the dictionary
         if word_lower in word_index_dict:
-            idx = word_index_dict[word_lower]
-            embedding_sum += embeddings[idx]
+            idx = word_index_dict[word_lower] # Get the index of the character
+            embedding_sum += embeddings[idx] # Obtain the vector of the character and add it to the total sum
             valid_word_count += 1
 
+    # Compute the average
     if valid_word_count > 0:
         averaged_embedding = embedding_sum / valid_word_count
-    else:
+    else: # return 0 if no words in the sentence are found in the dictionary
         averaged_embedding = np.zeros(embedding_dim)
 
     return averaged_embedding
@@ -398,8 +403,9 @@ def get_sorted_cosine_similarity(embeddings_metadata):
         - cosine_similarity(x, y)
     """
     categories = st.session_state.categories.split(" ")
-    cosine_sim = {}
+    cosine_sim = [] #{}
 
+    # Get input sentence
     input_sentence = st.session_state.text_search
     
     if embeddings_metadata["embedding_model"] == "glove":
@@ -411,8 +417,10 @@ def get_sorted_cosine_similarity(embeddings_metadata):
         ##########################################
         ## TODO: Implement GloVe similarity calculation (15 pts)
         ##########################################
+        # Obtain the average vector of the input sentence
         input_embedding = averaged_glove_embeddings_gdrive(input_sentence, word_index_dict, embeddings, model_type)
 
+        # Loop to compute the similarity of each category
         for index, category in enumerate(categories):
             category_embedding = averaged_glove_embeddings_gdrive(category, word_index_dict, embeddings, model_type)
 
@@ -431,6 +439,7 @@ def get_sorted_cosine_similarity(embeddings_metadata):
         ##########################################
         input_embedding = get_openai_embeddings(input_sentence, model_name=model_name)
 
+        # Ensure that category vectors are stored in the cache (use a helper function to avoid repeated API calls and save costs)
         get_category_embeddings(embeddings_metadata)
 
         for index, category in enumerate(categories):
@@ -461,6 +470,7 @@ def get_sorted_cosine_similarity(embeddings_metadata):
     ##########################################
     ## TODO: Sort and return results (5 pts)
     ##########################################
+    # Use a lambda function to sort in descending order based on the score (x[1]) (reverse=True)
     sorted_cosine_sim = sorted(cosine_sim, key=lambda x: x[1], reverse=True)
 
     return sorted_cosine_sim
@@ -611,7 +621,7 @@ if __name__ == "__main__":
 
         st.write("")
         st.write(
-            "Demo developed by [Your Name](https://www.linkedin.com/in/your_id/ - Optional)"
+            "Demo developed by [Ginny Hu](https://www.linkedin.com/in/your_id/ - Optional)"
         )
         
 
